@@ -1,0 +1,2 @@
+#,Employee Name,Employee ID,Department,Check-in Time,Check-out Time,Expected Time,Status,Time Difference,Work Hours,Notes
+1,ADMIN TESTER,18,Operations,01:46:00,01:58:05,8:00:00 - 17:00:00,Early,-06:14:00,00:12:05,| Time Out: TEST
