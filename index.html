@@ -1816,22 +1816,121 @@ body {
       </div>
     </div>
 
-   <script>
-setTimeout(() => {
-  document.body.classList.remove('not-loaded');
-}, 100);
+    <script>
+        // Remove the not-loaded class to start animations
+        setTimeout(() => {
+            document.body.classList.remove('not-loaded');
+        }, 100);
 
-const music = document.getElementById('bgMusic');
+        // FIXED: Better audio handling for Vercel deployment
+        const music = document.getElementById('bgMusic');
+        
+        // Set volume to a reasonable level (0.0 to 1.0)
+        music.volume = 0.5;
+        
+        // Function to attempt autoplay (may still be blocked by browser)
+        const attemptAutoplay = () => {
+            music.muted = false; // Unmute
+            music.play()
+                .then(() => {
+                    console.log('Audio started successfully');
+                    // Once playing, remove listeners
+                    document.removeEventListener('click', startMusic);
+                    document.removeEventListener('touchstart', startMusic);
+                    document.removeEventListener('keydown', startMusic);
+                })
+                .catch(error => {
+                    console.log('Autoplay prevented, waiting for user interaction:', error);
+                    // Keep muted state to allow autoplay in some browsers
+                    music.muted = true;
+                    music.play().catch(e => console.log('Muted autoplay also failed'));
+                });
+        };
 
-const startMusic = () => {
-  music.muted = false;
-  music.play();
-  document.removeEventListener('click', startMusic);
-  document.removeEventListener('touchstart', startMusic);
-};
+        // Function to start music with user interaction
+        const startMusic = () => {
+            music.muted = false;
+            music.volume = 0.5;
+            music.play()
+                .then(() => {
+                    console.log('Audio started via user interaction');
+                })
+                .catch(error => {
+                    console.error('Failed to play audio:', error);
+                });
+            
+            // Remove listeners after first interaction
+            document.removeEventListener('click', startMusic);
+            document.removeEventListener('touchstart', startMusic);
+            document.removeEventListener('keydown', startMusic);
+        };
 
-document.addEventListener('click', startMusic);
-document.addEventListener('touchstart', startMusic);
-</script>
+        // Try autoplay immediately (may be blocked)
+        attemptAutoplay();
+        
+        // Set up user interaction listeners
+        document.addEventListener('click', startMusic);
+        document.addEventListener('touchstart', startMusic);
+        document.addEventListener('keydown', startMusic);
+        
+        // Add a play button for mobile devices that block autoplay
+        const addPlayButton = () => {
+            const button = document.createElement('button');
+            button.innerHTML = '🎵 Play Music';
+            button.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                z-index: 1000;
+                padding: 12px 24px;
+                background: linear-gradient(135deg, #ff6ec7, #ff1493);
+                color: white;
+                border: none;
+                border-radius: 50px;
+                font-size: 16px;
+                cursor: pointer;
+                box-shadow: 0 0 20px rgba(255,110,199,0.8);
+                animation: pulse 2s infinite;
+                border: 2px solid white;
+                font-weight: bold;
+            `;
+            
+            // Add keyframes for button animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes pulse {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(1.1); }
+                    100% { transform: scale(1); }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            button.onclick = (e) => {
+                e.stopPropagation();
+                music.muted = false;
+                music.play()
+                    .then(() => {
+                        button.remove();
+                    })
+                    .catch(err => console.error('Still failed:', err));
+            };
+            
+            // Only show button if autoplay fails
+            setTimeout(() => {
+                if (music.paused) {
+                    document.body.appendChild(button);
+                }
+            }, 1000);
+        };
+        
+        // Check if audio is playing after 1 second, if not add button
+        setTimeout(() => {
+            if (music.paused) {
+                addPlayButton();
+            }
+        }, 1000);
+        
+    </script>
 </body>
 </html>
