@@ -1429,8 +1429,10 @@ body {
 </head>
 
 <body class="not-loaded">
-    <audio id="bgMusic" autoplay loop muted>
-      <source src="/Flower/bbuu.mp3" type="audio/mpeg">
+   <audio id="bgMusic" loop preload="auto">
+        <source src="bbuu.mp3" type="audio/mpeg">
+        <!-- Fallback text if audio cannot load -->
+        Your browser does not support the audio element.
     </audio>
     <!-- Valentine's Day Message -->
     <div class="valentine-message">
